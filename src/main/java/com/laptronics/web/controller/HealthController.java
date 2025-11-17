@@ -11,7 +11,7 @@ public class HealthController {
     public Map<String, String> getStatus() {
         return Map.of(
                 "status", "running",
-                "service", "sample"
+                "service", "users"
         );
     }
 
