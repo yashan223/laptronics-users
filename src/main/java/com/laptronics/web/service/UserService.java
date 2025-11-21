@@ -99,6 +99,30 @@ public class UserService {
         if (request.getPhoneNumber() != null) {
             user.setPhoneNumber(request.getPhoneNumber());
         }
+        if (request.getEmail() != null) {
+            // Check if email is already taken by another user
+            Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+            if (existingUser.isPresent() && !existingUser.get().getId().equals(userId)) {
+                throw new RuntimeException("Email already exists!");
+            }
+            user.setEmail(request.getEmail());
+        }
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordService.encryptPassword(request.getPassword()));
+        }
+        if (request.getRoles() != null && !request.getRoles().isEmpty()) {
+            user.getRoles().clear();
+            for (String roleName : request.getRoles()) {
+                Role role = roleRepository.findByName(roleName)
+                    .orElseGet(() -> {
+                        Role newRole = new Role();
+                        newRole.setName(roleName);
+                        newRole.setDescription(roleName + " role");
+                        return roleRepository.save(newRole);
+                    });
+                user.getRoles().add(role);
+            }
+        }
         
         User updatedUser = userRepository.save(user);
         return convertToUserResponse(updatedUser);
